@@ -1,4 +1,67 @@
+import { ChangeEvent, useEffect, useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import type Usuario from "../../models/Usuario";
+import { cadastrarUsuario } from "../../services/Service";
+
 function Cadastro() {
+  const navigate = useNavigate();
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const [confirmarSenha, setConfirmarSenha] = useState<string>("");
+
+  const [usuario, setUsuario] = useState<Usuario>({
+    id: 0,
+    nome: "",
+    usuario: "",
+    senha: "",
+    foto: "",
+  });
+
+  useEffect(() => {
+    if (usuario.id !== 0) {
+      retornar();
+    }
+  }, [usuario]);
+
+  function retornar() {
+    navigate("/");
+  }
+
+  function atualizarEstado(e: ChangeEvent<HTMLInputElement>) {
+    setUsuario({
+      ...usuario,
+      [e.target.name]: e.target.value,
+    });
+  }
+
+  function handleConfirmarSenha(e: ChangeEvent<HTMLInputElement>) {
+    setConfirmarSenha(e.target.value);
+  }
+
+  async function cadastrarNovoUsuario(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (confirmarSenha === usuario.senha && usuario.senha.length >= 8) {
+      setIsLoading(true);
+
+      try {
+        await cadastrarUsuario(`/usuarios/cadastrar`, usuario, setUsuario);
+        alert("Usuário cadastrado com sucesso!");
+      } catch (error) {
+        alert("Erro ao cadastrar o usuário!");
+      }
+    } else {
+      alert(
+        "Dados do usuário inconsistentes! Verifique as informações do cadastro."
+      );
+      setUsuario({ ...usuario, senha: "" });
+      setConfirmarSenha("");
+    }
+
+    setIsLoading(false);
+  }
+
   return (
     <>
       <div
